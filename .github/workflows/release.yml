@@ -6,7 +6,7 @@ on:
       - main 
 
 jobs:
-  build-ubuntu:
+build-ubuntu:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
@@ -14,36 +14,43 @@ jobs:
         with:
           submodules: true
 
-      - run: sudo apt-get update && sudo apt-get install libboost-test-dev -y
-
+      - run: sudo apt-get update && sudo apt-get install -y libboost-test-dev  # Установка зависимостей для Linux
       - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
       - run: cmake --build .
       - run: cmake --build . --target test  # Запуск тестов
       - run: cmake --build . --target package  # Создание пакета
 
-      - name: Create Release
-        id: create_release
+      - name: Check if tag exists
+        run: |
+          if git rev-parse "refs/tags/${{ github.run_number }}" >/dev/null 2>&1; then
+            echo "Tag exists. Exiting..."
+            exit 0
+          fi
+
+      - name: Create Release for Linux
+        id: create_release_linux
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.run_number }}
-          release_name: Release ${{ github.run_number }}
+          tag_name: v${{ github.run_number }}-${{ github.sha }}
+          release_name: Release ${{ github.run_number }} for Linux
           draft: false
           prerelease: false
 
-      - name: Upload Release Asset
-        id: upload-release-asset
+      - name: Upload Linux Release Asset
+        id: upload-release-asset-linux
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ steps.create_release_linux.outputs.upload_url }}
           asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb
           asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb
           asset_content_type: application/vnd.debian.binary-package
 
-  build-macos:
+
+build-macos:
     runs-on: macos-latest
     permissions: write-all
     steps:
@@ -57,14 +64,21 @@ jobs:
       - run: cmake --build . --target test  # Запуск тестов
       - run: cmake --build . --target package  # Создание пакета
 
+      - name: Check if tag exists
+        run: |
+          if git rev-parse "refs/tags/${{ github.run_number }}" >/dev/null 2>&1; then
+            echo "Tag exists. Exiting..."
+            exit 0
+          fi
+
       - name: Create Release for macOS
         id: create_release_macos
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.run_number }}
-          release_name: Release ${{ github.run_number }}
+          tag_name: v${{ github.run_number }}-${{ github.sha }}
+          release_name: Release ${{ github.run_number }} for macOS
           draft: false
           prerelease: false
 
