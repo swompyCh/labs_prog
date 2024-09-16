@@ -1,41 +1,92 @@
-name: 'C++ CI'
+name: 'C++ CI'  # Название рабочего процесса для непрерывной интеграции (CI) проекта на C++.
 
-on:
-  push:
-    branches:
-      - main
-      - feature/github_actions
+on:  # Определяет события, которые запускают этот рабочий процесс.
+  push:  # Рабочий процесс срабатывает при событии push.
+    branches:  # Указывает ветки, на которые будет реагировать событие push.
+      - main  # Основная ветка, при изменениях в которой будет запущен процесс.
+      - feature/github_actions  # Ветка с новыми функциями, также будет отслеживаться.
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    permissions: write-all
-    steps:
-      - uses: actions/checkout@v3
+jobs:  # Определяет набор задач, которые будут выполнены в этом рабочем процессе.
+  
+  build-linux:  # Задача для сборки проекта на Linux.
+    runs-on: ubuntu-latest  # Указывает, что задача будет выполняться на последней версии Ubuntu.
+    permissions: write-all  # Указывает права доступа для выполнения действий (запись во все репозитории).
+    
+    steps:  # Определяет шаги, которые будут выполнены в этой задаче.
+      - uses: actions/checkout@v3  # Использует действие для клонирования репозитория.
         with:
-          submodules: true
-      - run: sudo apt-get update && sudo apt-get install libboost-test-dev -y
-      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
-      - run: cmake --build .
-      - run: cmake --build . --target test
-      - run: cmake --build . --target package
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+          submodules: true  # Указывает, что подмодули также должны быть клонированы.
+
+      - run: sudo apt-get update && sudo apt-get install libboost-test-dev -y  # Обновляет список пакетов и устанавливает библиотеку Boost для тестирования.
+
+      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}  # Запускает CMake для конфигурации проекта, устанавливая номер сборки как версию патча.
+
+      - run: cmake --build .  # Компилирует проект с помощью CMake.
+
+      - run: cmake --build . --target test  # Запускает тесты проекта после сборки.
+
+      - run: cmake --build . --target package  # Создает пакет (например, .deb файл) после успешной сборки и тестирования.
+
+      - name: Create Release  # Шаг для создания релиза на GitHub.
+        id: create_release_linux  # Уникальный идентификатор шага для дальнейшего использования.
+        uses: actions/create-release@v1  # Использует действие для создания релиза на GitHub.
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Использует токен GitHub для аутентификации.
         with:
-          tag_name: ${{ github.run_number }}
-          release_name: Release ${{ github.run_number }}
-          draft: false
-          prerelease: false
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
+          tag_name: ${{ github.run_number }}  # Устанавливает имя тега как номер сборки.
+          release_name: Release ${{ github.run_number }} for Linux  # Название релиза включает номер сборки и указывает платформу (Linux).
+          draft: false  # Указывает, что релиз не является черновиком (draft).
+          prerelease: false  # Указывает, что релиз не является предварительной версией (prerelease).
+
+      - name: Upload Release Asset  # Шаг для загрузки артефакта релиза на GitHub.
+        id: upload-release-asset-linux  # Уникальный идентификатор шага для дальнейшего использования.
+        uses: actions/upload-release-asset@v1  # Использует действие для загрузки артефактов релиза на GitHub.
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Использует токен GitHub для аутентификации.
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb
-          asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb
-          asset_content_type: application/vnd.debian.binary-package
+          upload_url: ${{ steps.create_release_linux.outputs.upload_url }}  # URL для загрузки артефактов из предыдущего шага создания релиза.
+          asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb  # Путь к артефакту, который нужно загрузить (Linux).
+          asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb  # Имя загружаемого артефакта (Linux).
+          asset_content_type: application/vnd.debian.binary-package  # Тип содержимого загружаемого артефакта (в данном случае Debian пакет).
+
+  
+  build-macos:  # Задача для сборки проекта на macOS.
+    runs-on: macos-14  # Указывает, что задача будет выполняться на последней версии macOS.
+    permissions: write-all  # Указывает права доступа для выполнения действий (запись во все репозитории).
+    
+    steps:  # Определяет шаги, которые будут выполнены в этой задаче.
+      - uses: actions/checkout@v3  # Использует действие для клонирования репозитория.
+        with:
+          submodules: true  # Указывает, что подмодули также должны быть клонированы.
+
+      - run: brew install boost  # Устанавливает библиотеку Boost с помощью Homebrew на macOS.
+
+      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}  # Запускает CMake для конфигурации проекта, устанавливая номер сборки как версию патча.
+
+      - run: cmake --build .  # Компилирует проект с помощью CMake.
+
+      - run: cmake --build . --target test  # Запускает тесты проекта после сборки.
+
+      - run: cmake --build . --target package  # Создает пакет (например, .dmg файл) после успешной сборки и тестирования.
+
+      - name: Create Release  # Шаг для создания релиза на GitHub.
+        id: create_release_macos  # Уникальный идентификатор шага для дальнейшего использования.
+        uses: actions/create-release@v1  # Использует действие для создания релиза на GitHub.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Использует токен GitHub для аутентификации.
+        with:
+          tag_name: ${{ github.run_number }}  # Устанавливает имя тега как номер сборки.
+          release_name: Release ${{ github.run_number }} for macOS  # Название релиза включает номер сборки и указывает платформу (macOS).
+          draft: false  # Указывает, что релиз не является черновиком (draft).
+          prerelease: false  # Указывает, что релиз не является предварительной версией (prerelease).
+
+      - name: Upload Release Asset  # Шаг для загрузки артефакта релиза на GitHub.
+        id: upload-release-asset-macos  # Уникальный идентификатор шага для дальнейшего использования.
+        uses: actions/upload-release-asset@v1  # Использует действие для загрузки артефактов релиза на GitHub.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Использует токен GitHub для аутентификации.
+        with:
+          upload_url: ${{ steps.create_release_macos.outputs.upload_url }}  # URL для загрузки артефактов из предыдущего шага создания релиза.
+          asset_path: ./helloworld-0.0.${{ github.run_number }}-macOS.dmg   # Путь к артефакту, который нужно загрузить (macOS), измените путь в зависимости от формата пакета macOS.
+          asset_name: helloworld-0.0.${{ github.run_number }}-macOS.dmg   # Имя загружаемого артефакта (macOS), измените имя в зависимости от формата пакета macOS. 
+          asset_content_type: application/octet-stream   # Тип содержимого загружаемого артефакта (в данном случае DMG файл).
