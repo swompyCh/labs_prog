@@ -1,89 +1,64 @@
-name: Build and Release
+name: Build and Release for Linux and macOS
 
 on:
   push:
     branches:
-      - main 
+      - main  # или другая ветка, при пуше в которую будет триггериться workflow
 
 jobs:
-  build-ubuntu:
-    runs-on: ubuntu-latest
-    permissions: write-all
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-
-      - run: sudo apt-get update && sudo apt-get install -y libboost-test-dev  # Установка зависимостей для Linux
-      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
-      - run: cmake --build .
-      - run: cmake --build . --target test  # Запуск тестов
-      - run: cmake --build . --target package  # Создание пакета
-
-      - name: Check if tag exists
-        run: |
-          if git rev-parse "refs/tags/${{ github.run_number }}" >/dev/null 2>&1; then
-            echo "Tag exists. Exiting..."
-            exit 0
-          fi
-
-      - name: Create Release for Linux
-        id: create_release_linux
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ github.run_number }}-${{ github.sha }}
-          release_name: Release ${{ github.run_number }} for Linux
-          draft: false
-          prerelease: false
-
-      - name: Upload Linux Release Asset
-        id: upload-release-asset-linux
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release_linux.outputs.upload_url }}
-          asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb
-          asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb
-          asset_content_type: application/vnd.debian.binary-package
-
-
+  # Workflow для сборки и релиза на macOS
   build-macos:
     runs-on: macos-latest
     permissions: write-all
     steps:
+      # Чекаут кода
       - uses: actions/checkout@v3
         with:
           submodules: true
 
-      - run: brew update && brew install boost  # Установка boost для macOS
-      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
-      - run: cmake --build .
-      - run: cmake --build . --target test  # Запуск тестов
-      - run: cmake --build . --target package  # Создание пакета
+      # Установка зависимостей для macOS
+      - name: Install dependencies
+        run: brew update && brew install boost
 
+      # Генерация сборочных файлов
+      - name: Configure project
+        run: cmake . -DPATCH_VERSION=${{ github.run_number }}
+
+      # Компиляция проекта
+      - name: Build project
+        run: cmake --build .
+
+      # Запуск тестов
+      - name: Run tests
+        run: cmake --build . --target test
+
+      # Создание пакета для macOS
+      - name: Package for macOS
+        run: cmake --build . --target package
+
+      # Проверка на существование тега перед созданием релиза
       - name: Check if tag exists
         run: |
-          if git rev-parse "refs/tags/${{ github.run_number }}" >/dev/null 2>&1; then
-            echo "Tag exists. Exiting..."
+          if git rev-parse "refs/tags/v${{ github.run_number }}-macos" >/dev/null 2>&1; then
+            echo "Tag exists for macOS. Exiting..."
             exit 0
           fi
 
+      # Создание релиза для macOS
       - name: Create Release for macOS
         id: create_release_macos
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ github.run_number }}-${{ github.sha }}
+          tag_name: v${{ github.run_number }}-macos
           release_name: Release ${{ github.run_number }} for macOS
           draft: false
           prerelease: false
 
+      # Загрузка пакета в релиз для macOS
       - name: Upload macOS Release Asset
-        id: upload-release-asset-macos
+        id: upload_release_asset_macos
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -92,3 +67,65 @@ jobs:
           asset_path: ./helloworld-0.0.${{ github.run_number }}-macOS.pkg
           asset_name: helloworld-0.0.${{ github.run_number }}-macOS.pkg
           asset_content_type: application/octet-stream
+
+  # Workflow для сборки и релиза на Linux
+  build-linux:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      # Чекаут кода
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      # Установка зависимостей для Linux
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y libboost-test-dev
+
+      # Генерация сборочных файлов
+      - name: Configure project
+        run: cmake . -DPATCH_VERSION=${{ github.run_number }}
+
+      # Компиляция проекта
+      - name: Build project
+        run: cmake --build .
+
+      # Запуск тестов
+      - name: Run tests
+        run: cmake --build . --target test
+
+      # Создание пакета для Linux
+      - name: Package for Linux
+        run: cmake --build . --target package
+
+      # Проверка на существование тега перед созданием релиза
+      - name: Check if tag exists
+        run: |
+          if git rev-parse "refs/tags/v${{ github.run_number }}-linux" >/dev/null 2>&1; then
+            echo "Tag exists for Linux. Exiting..."
+            exit 0
+          fi
+
+      # Создание релиза для Linux
+      - name: Create Release for Linux
+        id: create_release_linux
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}-linux
+          release_name: Release ${{ github.run_number }} for Linux
+          draft: false
+          prerelease: false
+
+      # Загрузка пакета в релиз для Linux
+      - name: Upload Linux Release Asset
+        id: upload_release_asset_linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release_linux.outputs.upload_url }}
+          asset_path: ./helloworld-0.0.${{ github.run_number }}-Linux.deb
+          asset_name: helloworld-0.0.${{ github.run_number }}-Linux.deb
+          asset_content_type: application/vnd.debian.binary-package
