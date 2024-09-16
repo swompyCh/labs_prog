@@ -6,7 +6,7 @@ on:
       - main 
 
 jobs:
-build-ubuntu:
+  build-ubuntu:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
@@ -50,7 +50,7 @@ build-ubuntu:
           asset_content_type: application/vnd.debian.binary-package
 
 
-build-macos:
+  build-macos:
     runs-on: macos-latest
     permissions: write-all
     steps:
