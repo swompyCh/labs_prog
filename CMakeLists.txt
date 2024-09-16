@@ -59,15 +59,33 @@ endif()
 
 install(TARGETS helloworld_cli RUNTIME DESTINATION bin)
 
-set(CPACK_GENERATOR DEB)
+# Установки для CPack
+include(CPack)
 
-set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
+# Проверяем операционную систему
+if(APPLE)
+    # Для macOS используем productbuild для создания .pkg
+    set(CPACK_GENERATOR "productbuild")
+    set(CPACK_PACKAGE_FILE_NAME "helloworld-${CMAKE_PROJECT_VERSION}-macOS")
+    set(CPACK_PRODUCTBUILD_IDENTITY "Developer ID Installer")  # Указать, если используешь код-подпись
+elseif(UNIX)
+    # Для Linux используем DEB пакеты
+    set(CPACK_GENERATOR "DEB")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Your Name")  # Установи твоё имя
+    set(CPACK_PACKAGE_FILE_NAME "helloworld-${CMAKE_PROJECT_VERSION}-Linux")
+endif()
+
+# Общие настройки для всех ОС
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+
+set(CPACK_PACKAGE_NAME "helloworld")
+
+# Добавляем CPack
+include(CPack)
 
 set(CPACK_PACKAGE_CONTACT example@example.com)
-
-include(CPack)
 
 enable_testing()
 
