@@ -8,7 +8,7 @@
 #include "cool.h"
 
 int main() {
-    std::vector<std::tuple<int, int, int, int>> ipAddresses = read_ip_addresses("C:/Users/Sopha/Downloads/lab_2/ip_filter.tsv");
+    std::vector<std::tuple<int, int, int, int>> ipAddresses = read_ip_addresses("..\\ip_filter.tsv");
 
     sort_ip_addresses(ipAddresses);
 

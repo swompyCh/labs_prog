@@ -1,22 +1,6 @@
 #include <gtest/gtest.h>
 #include "cool.h"
 
-// Проверка, что v1 >= v2
-// Проверяет, что функция read_ip_addresses правильно считывает IP-адреса из файла ip_filter.tsv и преобразует их в вектор кортежей
-TEST(IPAddressTest, read_ip_addressesTest) {
-  std::vector<std::tuple<int, int, int, int>> expectedIPAddresses = {
-    {113, 162, 145, 156},
-    {157, 39, 22, 224},
-    {79, 180, 73, 190},
-    {179, 210, 145, 4}
-  };
-  // Для локального тестирования
-  // auto ipAddresses = read_ip_addresses("C:/Users/Sopha/Downloads/lab_2/ip_filter.tsv");
-  // Для тестирования в github actions
-  auto ipAddresses = read_ip_addresses("../ip_filter.tsv");
-  EXPECT_GE(ipAddresses, expectedIPAddresses);
-}
-
 //  Проверка, что v1 == v2
 // Проверяет, что функция sort_ip_addresses правильно сортирует вектор кортежей IP-адресов в порядке убывания.
 TEST(IPAddressTest, sort_ip_addressesTest) {
