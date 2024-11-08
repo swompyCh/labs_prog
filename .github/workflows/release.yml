@@ -1,0 +1,100 @@
+name: 'C++ CI'
+
+# Запускаем workflow при пуше в ветки lab3 или feature/github_actions
+on: 
+  push:
+    branches:
+      - lab3
+      - feature/github_actions
+
+jobs:
+  build_macos:
+    # Запускаем job на macos-latest
+    runs-on: macos-latest
+    # Предоставляем разрешения на запись во все ресурсы
+    permissions: write-all
+    steps:
+      # Клонируем репозиторий, включая submodules
+      - uses: actions/checkout@v3
+      
+      # Устанавливаем boost с помощью Homebrew
+      - run: brew install boost
+      
+      # Конфигурируем проект с помощью CMake, используя номер запуска для PATCH_VERSION
+      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
+      
+      # Строим проект с помощью CMake
+      - run: cmake --build .
+      
+      # Запускаем тесты
+      - name: Run Tests
+        run: |
+          ctest --output-on-failure || exit 1  # Проверяем наличие тестов и их успешное выполнение
+      
+      # Создаем пакет
+      - run: cmake --build . --target package
+      
+      # Создаем релиз для MacOS
+      - name: Create Release (MacOS)
+        id: create_release_macos
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.run_number }} # Используем номер запуска для тега
+          release_name: Release ${{ github.run_number }} (MacOS)
+          draft: false 
+          prerelease: false 
+      
+      # Загружаем релизный ассет для MacOS
+      - name: Upload Release Asset (MacOS)
+        id: upload-release-asset-macos
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release_macos.outputs.upload_url }}
+          asset_path: ./laba3-0.0.${{ github.run_number }}-Darwin.zip
+          asset_name: laba3-0.0.${{ github.run_number }}-Darwin.zip
+          asset_content_type: application/zip
+  
+  build_ubuntu:
+    # Запускаем job на ubuntu-latest
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      # Клонируем репозиторий, включая submodules
+      - uses: actions/checkout@v3
+      
+      # Конфигурируем проект с помощью CMake, используя номер запуска для PATCH_VERSION
+      - run: cmake . -DPATCH_VERSION=${{ github.run_number }}
+      
+      # Строим проект с помощью CMake
+      - run: cmake --build .
+      
+      # Создаем пакет
+      - run: cmake --build . --target package
+      
+      # Создаем релиз для Ubuntu
+      - name: Create Release (Ubuntu)
+        id: create_release_ubuntu
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }} 
+          release_name: Release ${{ github.run_number }} (Ubuntu)
+          draft: false 
+          prerelease: false 
+      
+      # Загружаем релизный ассет для Ubuntu
+      - name: Upload Release Asset (Ubuntu)
+        id: upload-release-asset-ubuntu
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release_ubuntu.outputs.upload_url }}
+          asset_path: ./laba3-0.0.${{ github.run_number }}-Linux.deb
+          asset_name: laba3-0.0.${{ github.run_number }}-Linux.deb
+          asset_content_type: application/vnd.debian.binary-package
