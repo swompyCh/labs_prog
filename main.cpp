@@ -17,12 +17,6 @@ struct SequentialContainer {
         other.capacity = 0;
     }
 
-    // SequentialContainer(SequentialContainer&& other) noexcept: data(other.data), size(other.size), capacity(other.capacity) {
-    //     other.data = nullptr; // Освобождаем указатель у другого объекта
-    //     other.size = 0;
-    //     other.capacity = 0;
-    // }
-
     // Перемещающий оператор присваивания
     SequentialContainer& operator=(SequentialContainer&& other) noexcept {
         if (this != &other) {
@@ -40,7 +34,7 @@ struct SequentialContainer {
 
     // Функция для увеличения емкости
     void resize() {
-        capacity = capacity == 0 ? 1 : static_cast<int>(capacity * 1.5); // Увеличиваем емкость на 50%
+        capacity = capacity == 0 ? 1 : static_cast<int>(capacity * 2); // Увеличиваем емкость на 50%
         int* newData = new int[capacity]; // Выделяем новую память
         for (int i = 0; i < size; ++i) {
             newData[i] = data[i]; // Копируем старые данные в новую память
@@ -118,7 +112,7 @@ struct SequentialContainer {
 
     // Получение размера контейнера
     int getCapacity() const {
-        return capacity; // Возвращаем текущее количество элементов
+        return capacity; // Возвращаем текущую ёмкость массива
     }
 
     // Вывод содержимого контейнера
@@ -186,6 +180,7 @@ struct SequentialContainer {
     delete[] data;
     }
 };
+
 
 
 // Класс для спискового контейнера (связь через указатели)
@@ -602,6 +597,7 @@ void testContainer(const std::string& name, T& container) {
     std::cout << "Содержимое: ";
     container.print();
 
+
     // Вывод размера
     std::cout << "Размер: " << container.getSize() << std::endl;
 
@@ -613,6 +609,8 @@ void testContainer(const std::string& name, T& container) {
     // Вывод содержимого после удаления
     std::cout << "Содержимое после удаления: ";
     container.print();
+
+
 
     // Добавление элемента в начало
     container.push_front(10);
@@ -712,7 +710,6 @@ void demonstrateIterator(const std::string& name)
 
 }
 int main() {
-    // system("chcp 866"); 
     // Создание объектов контейнеров
     SequentialContainer vec;
     DoubleLinkedList  Double_lst;
@@ -730,5 +727,32 @@ int main() {
     demonstrateIterator<SequentialContainer>("SequentialContainer");
     demonstrateIterator<DoubleLinkedList>("DoubleLinkedList");
     demonstrateIterator<SinglyLinkedList>("SinglyLinkedList");
+
+
+    std::cout << "Демонстрация функций getCapacity и shrinkToFit" << std::endl;
+    SequentialContainer container;
+    // Добавляем элементы в контейнер
+    for (int i = 0; i < 10; ++i) {
+        container.push_back(i + 1); // Добавляем числа от 1 до 15
+    }
+
+    // Выводим текущий размер и емкость контейнера
+    std::cout << "Размер контейнера: " << container.getSize() << std::endl;
+    std::cout << "Емкость контейнера: " << container.getCapacity() << std::endl;
+
+    // Удаляем несколько элементов
+    for (int i = 0; i < 5; ++i) {
+        container.erase(0); // Удаляем элементы с начала
+    }
+
+    // Выводим текущий размер и емкость после удаления
+    std::cout << "Размер контейнера после удаления: " << container.getSize() << std::endl;
+    std::cout << "Емкость контейнера после удаления: " << container.getCapacity() << std::endl;
+
+    container.shrinkToFit();
+
+    std::cout << "Размер контейнера после shrinkToFit: " << container.getSize() << std::endl;
+    std::cout << "Емкость контейнера после shrinkToFit: " << container.getCapacity() << std::endl;
+
     return 0;
 }
