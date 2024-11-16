@@ -7,6 +7,7 @@
 // Шаблонный класс-аллокатор, реализующий выделение памяти блоками заданного размера
 // T - тип данных, для которых используется аллокатор
 // BlockSize - размер блока (по умолчанию 10)
+// stateful аллокатор
 template <class T, size_t BlockSize = 10>
 struct allocatorforme {
     using value_type = T; // Тип данных, который может хранить аллокатор
@@ -58,17 +59,6 @@ struct allocatorforme {
         T * block; // указатель на начало блока
 };
 
-// Оператор == для сравнения аллокаторов (всегда возвращает true)
-template <class T, class U>
-constexpr bool operator== (const allocatorforme<T>& a1, const allocatorforme<U>& a2) noexcept {
-    return true;
-}
-
-// Оператор != для сравнения аллокаторов (всегда возвращает false)
-template <class T, class U>
-constexpr bool operator!= (const allocatorforme<T>& a1, const allocatorforme<U>& a2) noexcept {
-    return false;
-}
 
 // T - тип данных, которые хранит контейнер
 // MaxSize - максимальное количество элементов в контейнере
