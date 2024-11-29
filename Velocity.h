@@ -25,6 +25,15 @@ class Velocity {
         return vec;
     }
 
+    // void rotate(Point& vector, double angle)
+    // {
+    //     Point rotatedVector;
+    //     rotatedVector.x = vector.x * std::cos(angle) - vector.y * std::sin(angle);
+    //     rotatedVector.y = vector.x * std::sin(angle) + vector.y * std::cos(angle);
+    //     vector.x = rotatedVector.x;
+    //     vector.y = rotatedVector.y;
+    // }
+
   private:
     Point vec;
 };
