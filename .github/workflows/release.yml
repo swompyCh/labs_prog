@@ -84,13 +84,7 @@ jobs:
 
       - name: Build project
         run: cmake --build .
-
-      - name: Move Resources to Build Directory
-        run: |
-          if not exist build mkdir build
-          xcopy /s resources build\
-        shell: cmd
-        
+     
       - name: Package Project
         run: |
           cmake --build . --target package
