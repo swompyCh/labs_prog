@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <limits> 
 #include "Document.h"
 
 class Controller {
@@ -51,26 +52,54 @@ public:
         }
         std::shared_ptr<GraphicPrimitive> primitive;
         if (type == "Circle") {
-            std::cout << "Введите радиус: ";
             double radius;
-            std::cin >> radius;
+            while (true) {
+                std::cout << "Введите радиус: ";
+                std::cin >> radius;
 
+                if (std::cin.fail()) {
+                    std::cin.clear(); // Очистка состояния потока
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Игнорирование некорректного ввода
+                    std::cout << "Ошибка: введите число." << std::endl;
+                } else {
+                    break; // Ввод корректен, выходим из цикла
+                }
+            }
             primitive = std::make_shared<Circle>(radius);
         } else if (type == "Rectangle") {
-            std::cout << "Введите длину: ";
             double length;
-            std::cin >> length;
-
-            std::cout << "Введите ширину: ";
             double width;
-            std::cin >> width;
 
+            while (true){
+                std::cout << "Введите длину: ";
+                std::cin >> length;
+                std::cout << "Введите ширину: ";
+                std::cin >> width;
+
+                if (std::cin.fail()) {
+                    std::cin.clear(); // Очистка состояния потока
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Игнорирование некорректного ввода
+                    std::cout << "Ошибка: введите число." << std::endl;
+                } else {
+                    break; // Ввод корректен, выходим из цикла
+                }
+            }
             primitive = std::make_shared<Rectangle>(width, length);
         } else if (type == "Square") {
-            std::cout << "Введите длину: ";
             double length;
-            std::cin >> length;
 
+            while (true){
+                std::cout << "Введите длину: ";
+                std::cin >> length;
+
+                if (std::cin.fail()) {
+                    std::cin.clear(); // Очистка состояния потока
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Игнорирование некорректного ввода
+                    std::cout << "Ошибка: введите число." << std::endl;
+                } else {
+                    break; // Ввод корректен, выходим из цикла
+                }
+            }
             primitive = std::make_shared<Square>(length);
         } else {
             std::cout << "Неизвестный тип графического примитива: " << type << std::endl;
