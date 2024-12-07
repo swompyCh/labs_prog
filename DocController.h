@@ -8,10 +8,11 @@
 
 class Controller {
 private:
-    std::shared_ptr<Document> currentDocument; // текущий документ
+    std::vector<std::shared_ptr<Document>> documents; // Хранение всех документов
+    int currentDocumentIndex; // Индекс текущего документа
 public:
     
-    Controller() : currentDocument(nullptr) {}
+    Controller() : currentDocumentIndex(-1) {}
     
     void createDocument() {
         std::cout << "Введите имя нового документа: ";
@@ -22,31 +23,59 @@ public:
         std::string path;
         std::cin >> path;
 
-        currentDocument = std::make_shared<Document>(filename, path);
+        auto newDocument = std::make_shared<Document>(filename, path);
+        documents.push_back(newDocument);
+        currentDocumentIndex = documents.size() - 1; // Установить новый документ текущим
+        std::cout << "Документ успешно создан и установлен как текущий.";
+    }
+
+    void openDocumentByPath(const std::string& path) {
+        for (size_t i = 0; i < documents.size(); ++i) {
+            if (documents[i]->getPathDocument() == path) {
+                currentDocumentIndex = i;
+                std::cout << "Документ успешно открыт: " << documents[i]->getNameDocument() << "";
+                return;
+            }
+        }
+        std::cout << "Документ с указанным путем не найден.";
     }
   
     void importDocument(const std::string& path) {
-        if (currentDocument) {
-            currentDocument->importDocument(path);
+        if (currentDocumentIndex >= 0) {
+            for (const auto& doc : documents) {
+                if (doc->getPathDocument() == path) {
+                    for (const auto& primitive : doc->getPrimitiveList()) {
+                        documents[currentDocumentIndex]->addGraphicPrimitive(primitive);
+                    }
+                    std::cout << "Примитивы импортированы из документа: " << path << "\n";
+                    return;
+                }
+            }
+            std::cout << "Документ с указанным путем не найден для импорта.\n";
         } else {
-            std::cout << "Нет текущего документа для импорта" << std::endl;
+            std::cout << "Нет текущего документа для импорта.\n";
         }
     }
-    
+
     void exportDocument(const std::string& path) {
-        if (currentDocument) {
-            currentDocument->exportDocument(path);
+        if (currentDocumentIndex >= 0) {
+            for (auto& doc : documents) {
+                if (doc->getPathDocument() == path) {
+                    for (const auto& primitive : documents[currentDocumentIndex]->getPrimitiveList()) {
+                        doc->addGraphicPrimitive(primitive);
+                    }
+                    std::cout << "Примитивы экспортированы в документ: " << path << "\n";
+                    return;
+                }
+            }
+            std::cout << "Документ с указанным путем не найден для экспорта.\n";
         } else {
-            std::cout << "Нет текущего документа для экспорта" << std::endl;
+            std::cout << "Нет текущего документа для экспорта.\n";
         }
-    }
-    
-    void setCurrentDocument(const std::shared_ptr<Document>& document) {
-        currentDocument = document;
     }
     
     void addGraphicPrimitive(const std::string& type) {
-        if (!currentDocument) {
+        if (!documents[currentDocumentIndex]) {
             std::cout << "Нет текущего документа. Сначала создайте или выберите документ." << std::endl;
             return;
         }
@@ -105,27 +134,27 @@ public:
             std::cout << "Неизвестный тип графического примитива: " << type << std::endl;
             return;
         }
-        currentDocument->addGraphicPrimitive(primitive);
+        documents[currentDocumentIndex]->addGraphicPrimitive(primitive);
     }
     
     void deleteGraphicPrimitive(int id) {
-        if (!currentDocument) {
+        if (!documents[currentDocumentIndex]) {
             std::cout << "Нет текущего документа. Сначала создайте или выберите документ" << std::endl;
             return;
         }
 
-        currentDocument->deleteGraphicPrimitive(id);
+        documents[currentDocumentIndex]->deleteGraphicPrimitive(id);
     }
     
     void showCurrentDocumentInfo() const {
-        if (currentDocument) {
+        if (documents[currentDocumentIndex]) {
             std::cout << "Информация о текущем документе:" << std::endl;
-            currentDocument->getNameDocument();
-            currentDocument->getId();
-            currentDocument->getPathDocument();
+            documents[currentDocumentIndex]->getNameDocument();
+            documents[currentDocumentIndex]->getId();
+            documents[currentDocumentIndex]->getPathDocument();
             
             // Вывод информации о графических примитивах
-            currentDocument->showGraphicPrimitivesInfo();
+            documents[currentDocumentIndex]->showGraphicPrimitivesInfo();
         } else {
             std::cout << "Нет текущего документа" << std::endl;
         }

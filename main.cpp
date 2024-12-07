@@ -6,12 +6,13 @@ void printMenu()
 {
     std::cout << "\nВыберитe действие:\n";
     std::cout << "1. Создать документ\n";
-    std::cout << "2. Импорт документа\n";
-    std::cout << "3. Экспорт документа\n";
-    std::cout << "4. Добавить примитив\n";
-    std::cout << "5. Удалить примитив\n";
-    std::cout << "6. Показать информацию о текущем документе\n";
-    std::cout << "7. Выход\n";
+    std::cout << "2. Открыть документ по пути\n";
+    std::cout << "3. Импорт документа\n";
+    std::cout << "4. Экспорт документа\n";
+    std::cout << "5. Добавить примитив\n";
+    std::cout << "6. Удалить примитив\n";
+    std::cout << "7. Показать информацию о текущем документе\n";
+    std::cout << "8. Выход\n";
     std::cout << "Введите номер действия: ";
 }
 
@@ -23,7 +24,14 @@ int main()
     {
         printMenu();
         int choice;
-        std::cin >> choice;
+
+        while (!(std::cin >> choice))
+        {
+            std::cin.clear();                                                   // Сбрасываем состояние потока
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Игнорируем некорректный ввод
+            std::cout << "Неккоректный ввод. \n";
+            printMenu();
+        }
 
         switch (choice)
         {
@@ -31,6 +39,14 @@ int main()
             controller.createDocument();
             break;
         case 2:
+        {
+            std::cout << "Введите путь к документу: ";
+            std::string path;
+            std::cin >> path;
+            controller.openDocumentByPath(path);
+            break;
+        }
+        case 3:
         {
             std::cout << "Введите путь до импортируемого документа: ";
             std::string path;
@@ -40,7 +56,7 @@ int main()
             std::cout << std::endl;
             break;
         }
-        case 3:
+        case 4:
         {
             std::cout << "Введите путь до экспортируемого документа: " << std::endl;
             std::string path;
@@ -49,7 +65,7 @@ int main()
             std::cout << std::endl;
             break;
         }
-        case 4:
+        case 5:
         {
             std::cout << "Введите тип примитива(Circle, Square, Rectangle): " << std::endl;
             std::string type;
@@ -57,7 +73,7 @@ int main()
             controller.addGraphicPrimitive(type);
             break;
         }
-        case 5:
+        case 6:
         {
             std::cout << "Введите ID графического примитива для удаления: " << std::endl;
             int id;
@@ -66,14 +82,14 @@ int main()
             std::cout << std::endl;
             break;
         }
-        case 6:
+        case 7:
         {
             std::cout << "Показать информацию о текущем документе: " << std::endl;
             controller.showCurrentDocumentInfo();
             std::cout << std::endl;
             break;
         }
-        case 7:
+        case 8:
         {
             std::cout << "Выход.\n";
             return 0;

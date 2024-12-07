@@ -16,7 +16,7 @@ private:
     std::string pathDocument;                                         // путь до документа
     std::vector<std::shared_ptr<GraphicPrimitive>> graphicPrimitives; // набор графических примитивов в документе
 public:
-    //  конструктор по умолчанию
+    // конструктор по умолчанию
     Document() : nameDocument(""), pathDocument(""), id(id_document++)
     {
         std::cout << "Создан пустой документ; ID: " << id << std::endl;
@@ -98,7 +98,6 @@ public:
     }
 
     // удаление примитива
-    // figure примитив
     void deleteGraphicPrimitive(int id)
     {
         bool found = false; // нашелся ли примитив в документе
@@ -115,7 +114,6 @@ public:
         }
     }
 
-
     void showGraphicPrimitivesInfo() const {
         if (graphicPrimitives.empty()) {
             std::cout << "В документе \"" << nameDocument << "\" (ID: " << id << ") нет графических примитивов." << std::endl;
@@ -127,8 +125,11 @@ public:
             std::cout << "- " << primitive->getFigureName() << " (ID: " << primitive->getId() << ")" << std::endl;
         }
     }
-    
 
+    const std::vector<std::shared_ptr<GraphicPrimitive>>& getPrimitiveList() const {
+        return graphicPrimitives;
+    }
+    
     // деструктор
     ~Document()
     {
